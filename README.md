@@ -69,12 +69,131 @@ This project presents an enterprise-grade, end-to-end **Hybrid Quantum-Classical
 
 ---
 
+## End-to-End Implementation Process (Step-by-Step)
+
+The AP-Grid Quantum Optimiser & PQC Shield follows an automated 9-step hybrid quantum-classical pipeline:
+
+```
+ ┌────────────────────────────────────────────────────────────────────────────────────────┐
+ │                      END-TO-END IMPLEMENTATION PIPELINE WORKFLOW                       │
+ └────────────────────────────────────────────────────────────────────────────────────────┘
+  [Step 1] Grid Telemetry Ingestion (APSLDC Data, Demand %, Solar/Wind Forecast)
+     │
+     ▼
+  [Step 2] Mathematical Formulation (QUBO & Problem-Tailored Ising Spin Hamiltonian)
+     │
+     ▼
+  [Step 3] Custom MA-QAOA Ansatz & Variational Training (SPSA / Parameter-Shift / COBYLA)
+     │
+     ▼
+  [Step 4] Native Heavy-Hex Transpilation (ISA Basis {RZ, SX, CZ} + OpenQASM 2.0 Export)
+     │
+     ▼
+  [Step 5] Physical IBM Quantum QPU Submission (ibm_marrakesh / ibm_fez via Qiskit Runtime)
+     │
+     ▼
+  [Step 6] M3 Readout Error Mitigation & Optimal Ground State Bitstring Recovery
+     │
+     ▼
+  [Step 7] DC Optimal Power Flow (DCOPF) & Continuous Dispatch (Line Loading & Congestion)
+     │
+     ▼
+  [Step 8] NIST Post-Quantum Cryptographic Shielding (ML-KEM-768 + ML-DSA-65 + AES-256-GCM)
+     │
+     ▼
+  [Step 9] Interactive Web Dashboard & Real-Time Operational Monitoring (Streamlit UI)
+```
+
+---
+
+### Step 1: Grid Telemetry Ingestion & Dynamic Scenario Modeling
+* **Datasets Ingested**: Ingests empirical hourly load curves from Andhra Pradesh State Load Despatch Centre (APSLDC) datasets ([`data/apsldc_january_2026.csv`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/data/apsldc_january_2026.csv) and [`data/apsldc_april_2025.csv`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/data/apsldc_april_2025.csv)).
+* **Scenario Flexibility**: Interactive sidebar controls allow testing stress scenarios:
+  * Demand variation: $-30\%$ to $+30\%$ (e.g. $+10\%$ heatwave peak).
+  * Solar generation availability: $0\%$ to $100\%$ (e.g. $-50\%$ cloudy monsoon drop).
+  * Wind generation availability: $0\%$ to $100\%$.
+* **Grid Topology**: Mapped across 5 critical Andhra Pradesh substation buses: Visakhapatnam (**VSKP**), Vizianagaram (**VZM**), Vijayawada (**VJA**), Kurnool (**KNL**), and Tirupati (**TPT**).
+
+---
+
+### Step 2: Mathematical QUBO & Ising Hamiltonian Formulation
+* **Decision Variables**: Binary variables $x_{g,t} \in \{0, 1\}$ represent the operational commitment (ON/OFF) of thermal, gas, and hydro generators $g$ across 4 distinct 6-hour daily time blocks $t \in [00\text{-}06, 06\text{-}12, 12\text{-}18, 18\text{-}24]$.
+* **Spin Transformation**: Mapped to Pauli-$Z$ quantum spin operators via $s_{g,t} = 1 - 2x_{g,t}$.
+* **Problem Hamiltonian**: Formulates the cost objective and operational penalties into a Sparse Pauli Operator:
+  $$\hat{H}_C = \sum_{i} h_i \hat{Z}_i + \sum_{i < j} J_{ij} \hat{Z}_i \hat{Z}_j$$
+  Enforcing fuel costs, carbon emission penalties, startup/shutdown costs, spinning reserve requirements, and inter-temporal ramp limits.
+
+---
+
+### Step 3: Custom Multi-Angle QAOA (MA-QAOA) Ansatz Synthesis & Parameter Optimization
+* **Topology-Tailored Parameterization**: Unlike standard uniform QAOA, our custom Multi-Angle QAOA assigns independent variational angles ($\boldsymbol{\gamma}, \boldsymbol{\beta}$) per generator class:
+  * Coal base-load mixer: $\beta_{\text{coal}}$
+  * Gas peaker mixer: $\beta_{\text{gas}}$
+  * Hydro responsive mixer: $\beta_{\text{hydro}}$
+  * Collocated XY-exchange mixer: $(R_{xx} + R_{yy})$ preserving capacity between same-bus thermal units at VSKP.
+* **Quantum Gradient Optimization**: Parameter training executes via classical optimizers (COBYLA, SPSA) and quantum expectation evaluation with exact analytic **parameter-shift gradients**:
+  $$\frac{\partial \langle \hat{H}_C \rangle}{\partial \theta} = \frac{\langle \hat{H}_C \rangle_{\theta + \frac{\pi}{2}} - \langle \hat{H}_C \rangle_{\theta - \frac{\pi}{2}}}{2}$$
+* **Convergence Tracking**: Variational parameters descend smoothly across 40 iterations toward the global QUBO minimum.
+
+---
+
+### Step 4: Heavy-Hex Native Basis Transpilation & OpenQASM 2.0 Synthesis
+* **ISA Basis Transpilation**: Circuits are transpiled directly into the IBM Quantum heavy-hex native basis set:
+  $$\text{Native Basis: } \left\{ R_Z(\theta), \sqrt{X}\;(\text{SX}), CZ \right\}$$
+* **Zero Swap Overhead**: Two-qubit interactions are synthesized exclusively into native Controlled-$Z$ ($CZ$) entangling gates with zero redundant $CX$ or $ECR$ decomposition overhead.
+* **OpenQASM Export**: Emits fully compliant OpenQASM 2.0 files ([`qaoa_circuit.qasm`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/qaoa_circuit.qasm)) directly exportable to IBM Quantum Composer.
+
+---
+
+### Step 5: Physical IBM Quantum QPU Submission & Runtime Execution
+* **Cloud QPU Execution**: Submits transpiled ISA circuits directly to IBM Quantum utility-scale 156-qubit Heron processors (`ibm_marrakesh`, `ibm_fez`, `ibm_kingston`) via Qiskit IBM Runtime `SamplerV2`.
+* **Execution Parameters**: Standard 4,096-shot budget executed in ~3.0s QPU runtime.
+* **Workload Auditing**: Every execution receives a unique IBM job ID (e.g. `db46og4vf2bc7...`, `db46de4vf2bc7...`, `db3rntamb58s...`) trackable on the live IBM Quantum Platform Workloads dashboard.
+
+---
+
+### Step 6: Matrix-Free Measurement Mitigation (M3) & Ground State Extraction
+* **Readout Error Correction**: Raw quantum bitstring counts undergo M3 matrix-free measurement mitigation with active probability simplex projection to eliminate detector assignment fidelities and bit-flip noise.
+* **State Identification**: Extracts the highest-probability ground-state bitstring (e.g. `101 111 111`), achieving **0.0% optimality gap** and **100% mathematical parity** with classical MILP branch-and-bound baselines.
+
+---
+
+### Step 7: DC Optimal Power Flow (DCOPF) & Continuous Dispatch
+* **Linear Economic Dispatch**: With binary commitment states locked by QAOA, a continuous Linear Program (LP) calculates exact generation setpoints ($P_g$ in MW) and nodal power injections.
+* **Transmission Flow & Congestion**: Evaluates DC power flows along transmission corridors (VSKP $\rightarrow$ VZM, VZM $\rightarrow$ VJA, VJA $\rightarrow$ KNL, KNL $\rightarrow$ TPT, VJA $\rightarrow$ TPT).
+* **Line Loading Classification**:
+  * 🟢 **Normal**: $< 60\%$ loading.
+  * 🟡 **Warning**: $60\% - 85\%$ loading.
+  * 🔴 **Congested**: $> 85\%$ loading.
+* **Environmental & Cost Auditing**: Quantifies total operating cost (₹ Lakh), CO₂ emissions (tonnes), loss-of-load (unserved energy), and renewable curtailment.
+
+---
+
+### Step 8: NIST Post-Quantum Cryptographic (PQC) Shielding
+* **Lattice-Based Security**: To defend against *Harvest Now, Decrypt Later* (HNDL) attacks on critical power grid SCADA infrastructure:
+  * **Key Encapsulation**: **ML-KEM-768** (FIPS 203 / Kyber-768) securely exchanges 256-bit symmetric session keys.
+  * **Digital Signatures**: **ML-DSA-65** (FIPS 204 / Dilithium-3) digitally signs the dispatch instructions and grid telemetry packets.
+  * **Payload Encryption**: Dispatches are encrypted with authenticated **AES-256-GCM** in $<1.8\text{ ms}$, saved to [`ibm_results.enc.json`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/ibm_results.enc.json).
+
+---
+
+### Step 9: Interactive Web Dashboard & Real-Time Monitoring
+* **Streamlit UI Interface**: Launchable via `streamlit run app.py` at `http://localhost:8501`.
+* **Live Operational Features**:
+  * **Scenario Sliders**: Dynamic adjustment of grid demand, solar, and wind.
+  * **One-Click QPU Submission**: Toggle between local Aer simulation and physical IBM Quantum QPUs.
+  * **Visual Optimization Convergence**: Real-time energy expectation $\langle E \rangle$ convergence plots.
+  * **Interactive 5-Bus Grid Map**: Color-coded line loading and flow diagrams.
+  * **PQC Security Inspector**: Cryptographic key and signature validation terminal.
+
+---
+
 ### Qiskit Level of Programming
 * **Framework Versioning**: Developed strictly on **Qiskit `v2.5.2`** and **Qiskit IBM Runtime `v0.50.0`**, adhering to the ISA (Instruction Set Architecture) execution model.
 * **Custom MA-QAOA Ansatz (`qaoa.py`)**: Unlike standard generic QAOA implementations that enforce uniform parameters across all qubits, our custom Multi-Angle QAOA ansatz assigns independent variational angle parameters ($\boldsymbol{\gamma}, \boldsymbol{\beta}, \boldsymbol{\alpha}$) to specific generator interaction cliques and temporal blocks. This matches the physical AP-Grid topology and drastically accelerates ground-state convergence.
 * **Native Gate Synthesis**: Directly synthesised into the IBM Quantum heavy-hex native basis set: $\left\{ R_Z(\theta), \sqrt{X}\;(\text{SX}), CZ \right\}$. Two-qubit interactions compile to native controlled-$Z$ ($CZ$) entangling gates with zero redundant CX/ECR cross-compilation overhead.
 * **Error Mitigation (`mitigation.py`)**: Implements Matrix-free Measurement Mitigation (M3) inversion with active probability simplex projection, suppressing assignment fidelities and bit-flip readout errors on real physical QPUs.
-* **OpenQASM Export**: Generates compliant OpenQASM 2.0 specifications ([`qaoa_circuit.qasm`](file:///c:/Users/Lakshmitha/OneDrive/Desktop/VS code/FallF/qaoa_circuit.qasm)) directly importable into the IBM Quantum Composer.
+* **OpenQASM Export**: Generates compliant OpenQASM 2.0 specifications ([`qaoa_circuit.qasm`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/qaoa_circuit.qasm)) directly importable into the IBM Quantum Composer.
 
 ---
 
@@ -371,7 +490,7 @@ pip install qiskit qiskit-aer qiskit-ibm-runtime scipy numpy matplotlib streamli
    ```powershell
    python hardware.py
    ```
-   *Submits the transpiled circuit to the least-busy 156-qubit IBM QPU (`ibm_marrakesh` / `ibm_fez`), prints the live IBM Quantum Platform job tracking URL, applies M3 readout error mitigation, exports [`qaoa_circuit.qasm`](file:///c:/Users/Lakshmitha/OneDrive/Desktop/VS code/FallF/qaoa_circuit.qasm), and saves [`ibm_results.enc.json`](file:///c:/Users/Lakshmitha/OneDrive/Desktop/VS code/FallF/ibm_results.enc.json).*
+   *Submits the transpiled circuit to the least-busy 156-qubit IBM QPU (`ibm_marrakesh` / `ibm_fez`), prints the live IBM Quantum Platform job tracking URL, applies M3 readout error mitigation, exports [`qaoa_circuit.qasm`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/qaoa_circuit.qasm), and saves [`ibm_results.enc.json`](file:///c:/Users/Prodduturi%20sathvik/OneDrive/Desktop/New%20folder%20%284%29/ibm_results.enc.json).*
 
 4. **Retrieve Any Historical Job from IBM Quantum Platform**:
    ```powershell
