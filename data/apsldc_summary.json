@@ -1,0 +1,56 @@
+{
+  "dataset_name": "APSLDC Real Grid Demand & Renewable Generation",
+  "jurisdiction": "Andhra Pradesh State Load Despatch Centre (APTRANSCO)",
+  "source_documents": [
+    "DAY WISE DEMAND FORECAST Vs ACTUALS FOR JANUARY 2026 (APSLDC)",
+    "DAY WISE DEMAND FORECAST Vs ACTUALS FOR APRIL 2025 (APSLDC)"
+  ],
+  "winter_jan_2026": {
+    "peak_demand_mw": 11538.0,
+    "base_demand_mw": 6989.0,
+    "monthly_energy_mu": 6981.0,
+    "forecast_accuracy_pct": 97.15,
+    "solar_generation_mu_day": 22.58,
+    "wind_generation_mu_day": 12.35
+  },
+  "summer_apr_2025": {
+    "peak_demand_mw": 12839.0,
+    "base_demand_mw": 8096.0,
+    "monthly_energy_mu": 7159.0,
+    "forecast_accuracy_pct": 97.54,
+    "solar_generation_mu_day": 26.14,
+    "wind_generation_mu_day": 10.43
+  },
+  "substations": [
+    {
+      "node": "VSKP",
+      "name": "Visakhapatnam",
+      "type": "Thermal Baseload & Industrial Port",
+      "demand_share": 0.3
+    },
+    {
+      "node": "VZM",
+      "name": "Vizianagaram",
+      "type": "North Coastal Transmission Hub",
+      "demand_share": 0.15
+    },
+    {
+      "node": "VJA",
+      "name": "Vijayawada",
+      "type": "Capital Commercial & Gas Peaking",
+      "demand_share": 0.25
+    },
+    {
+      "node": "KNL",
+      "name": "Kurnool",
+      "type": "Solar Park & Hydro Storage Hub",
+      "demand_share": 0.15
+    },
+    {
+      "node": "TPT",
+      "name": "Tirupati",
+      "type": "Southern Industrial & Pilgrim Load",
+      "demand_share": 0.15
+    }
+  ]
+}

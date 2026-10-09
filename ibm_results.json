@@ -1,0 +1,87 @@
+{
+  "job_id": "db3s9rimb58s7388alng",
+  "backend": "ibm_marrakesh",
+  "fake": false,
+  "shots": 4096,
+  "run_time_s": 17.71,
+  "ibm_platform_url": "https://quantum.cloud.ibm.com/jobs/db3s9rimb58s7388alng",
+  "hardware": {
+    "schedule": [
+      [
+        1,
+        1,
+        1
+      ],
+      [
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1
+      ]
+    ],
+    "cost_lakh": 352.71,
+    "emissions_t": 6580.3,
+    "curtail_mwh": 0.0,
+    "unserved_mwh": 0.0,
+    "prob_in_top1pct": 0.2236,
+    "qubo_optimum_sampled": true
+  },
+  "ideal": {
+    "schedule": [
+      [
+        1,
+        1,
+        1
+      ],
+      [
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1
+      ]
+    ],
+    "cost_lakh": 352.71,
+    "emissions_t": 6580.3,
+    "curtail_mwh": 0.0,
+    "unserved_mwh": 0.0,
+    "prob_in_top1pct": 0.4758,
+    "qubo_optimum_sampled": true
+  },
+  "milp": {
+    "cost_lakh": 352.71,
+    "emissions_t": 6580.3
+  },
+  "generators": [
+    "Coal-1",
+    "Gas",
+    "Hydro"
+  ],
+  "blocks": [
+    "00-06",
+    "06-12",
+    "12-18"
+  ],
+  "demand_mw": [
+    520.0,
+    700.0,
+    780.0
+  ],
+  "solar_mw": [
+    0.0,
+    100.0,
+    137.5
+  ],
+  "wind_mw": [
+    36.0,
+    30.0,
+    36.0
+  ]
+}

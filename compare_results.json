@@ -1,0 +1,36 @@
+{
+  "scenario": "BASE DAY",
+  "gap_pct": 0.0,
+  "saving_vs_allon_pct": 6.8,
+  "lp_qaoa_cost_lakh": 554.8,
+  "milp_cost_lakh": 554.8,
+  "lp_qaoa_unserved_mwh": 0.0,
+  "t_qaoa_s": 135.7,
+  "t_milp_s": 0.017,
+  "u_qaoa": [
+    [
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1
+    ]
+  ]
+}

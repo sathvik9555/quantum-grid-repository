@@ -1,0 +1,8 @@
+qiskit
+qiskit-aer
+qiskit-ibm-runtime
+scipy
+numpy
+pandas
+matplotlib
+streamlit
